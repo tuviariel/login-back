@@ -64,7 +64,7 @@ router.post('/', async (req,res,next) => {
         // sending email to user:
         const userL = {
             email: req.body.email,
-            name: "New User",
+            name: req.body.name || req.body.email.slice(0,req.body.email.indexOf("@")) || "New User",
             code: OTPCode,
         }
         if (userL.email) {
@@ -72,7 +72,7 @@ router.post('/', async (req,res,next) => {
                 from: '"My Company" <tuviaa109@gmail.com>',
                 template: "email",
                 to: userL.email,
-                subject: `Welcome to the site, ${userL.name || userL.email.slice(0,userL.email.indexOf("@"))}!`,
+                subject: `Welcome to the site, ${userL.name}!`,
                 context: {
                     name: userL.name,
                     email: userL.email,
@@ -138,7 +138,15 @@ const getOTPCode = async () => {
     if(tempData) {
         let newOTPCode = "";
         tempData.data.locations.map(place => {
-            newOTPCode = newOTPCode + parseInt(Math.abs(place.days[0].temp)).toString();
+            let newTemp = parseInt(Math.abs(place.days[0].temp)).toString();
+            if(newTemp.length !== 2) {
+                if(newTemp.length > 2) {
+                    newTemp.slice(0,2)
+                } else {
+                    newTemp = "0" + newTemp
+                }
+            }
+            newOTPCode = newOTPCode + newTemp;
         })
         console.log(newOTPCode)
         return newOTPCode
