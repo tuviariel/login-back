@@ -1,6 +1,7 @@
 {
     "env": {
         "MONGO_ATLAS_PW":"DMfzoZKhsyn4R8lz",
-        "MONGO_ATLAS_UN":"tuviaa109"
+        "MONGO_ATLAS_UN":"tuviaa109",
+        "WEATHER_API_KEY":"U3PUP8N4SLFMG7VEKMB9ML46A"
     }
 }

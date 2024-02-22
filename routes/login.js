@@ -5,6 +5,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/users")
 const mongoose = require("mongoose");
+const { default: axios } = require('axios');
 
 // initialize nodemailer
 const transporter = nodemailer.createTransport(
@@ -32,11 +33,12 @@ transporter.use('compile', hbs(handlebarOptions))
 //on email address receive
 router.post('/', async (req,res,next) => {
     if(req.body.email) {
-        console.log(req.body);
-        const OTPCode = 202020; //TODO: generate from external Api 
+        // console.log(req.body);
+        const OTPCode = await getOTPCode(); 
         const email = req.body.email;
         const emailTS = Date.now();
-        // relate to DB:
+
+        // relate to DB- if user -> update, if no user -> create:
         try {
             const user = await User.findOne({email: email})
             if(user) {
@@ -58,7 +60,8 @@ router.post('/', async (req,res,next) => {
         } catch (err) {
             console.log("DB error", err);
         }
-        // sending email:
+
+        // sending email to user:
         const userL = {
             email: req.body.email,
             name: "New User",
@@ -103,7 +106,7 @@ router.post('/code', async (req,res,next) => {
         try {
             const user = await User.findOne({email: req.body.email})
             if(user) {
-                if(user.lastOTPCode.toString() !== req.body.code) {
+                if(user.lastOTPCode !== req.body.code) {
                     res.status(202).json({
                         message: "incorrect code- check the email you received and try again",
                     })
@@ -112,7 +115,7 @@ router.post('/code', async (req,res,next) => {
                         message: "5 minutes have passed since the email was sent to you- try sending your email address again",
                         action: "back"
                     })
-                } else if(user.emailTS > currentTime-300000 && user.lastOTPCode.toString() === req.body.code) {
+                } else if(user.emailTS > currentTime-300000 && user.lastOTPCode === req.body.code) {
                     user.auth = true;
                     await user.save();
                     res.status(200).json({
@@ -128,5 +131,18 @@ router.post('/code', async (req,res,next) => {
         }
     }
 });
+
+const getOTPCode = async () => {
+    // requesting temp from external API:
+    const tempData = await axios.get("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timelinemulti?key="+ process.env.WEATHER_API_KEY +"&locations=London%2CUK%7CParis%2CFrance%7CTokyo%2CJapan%7C")
+    if(tempData) {
+        let newOTPCode = "";
+        tempData.data.locations.map(place => {
+            newOTPCode = newOTPCode + parseInt(Math.abs(place.days[0].temp)).toString();
+        })
+        console.log(newOTPCode)
+        return newOTPCode
+    }
+}
 
 module.exports = router;
