@@ -109,6 +109,7 @@ router.post('/code', async (req,res,next) => {
                 if(user.lastOTPCode !== req.body.code) {
                     res.status(202).json({
                         message: "incorrect code- check the email you received and try again",
+                        action: "stay"
                     })
                 } else if(user.emailTS < currentTime-300000) {
                     res.status(202).json({
