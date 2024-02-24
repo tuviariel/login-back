@@ -79,10 +79,9 @@ router.post('/', async (req,res,next) => {
                     code: userL.code,
                 },
             };
-            console.log(mailOptions)
             try {
                 const result = await transporter.sendMail(mailOptions);
-                console.log("result:", result)
+                // console.log("result:", result)
                 res.status(200).json({
                     message: "We sent you an email.",
                     action: "next",
@@ -101,7 +100,7 @@ router.post('/', async (req,res,next) => {
 //on code receive
 router.post('/code', async (req,res,next) => {
     if(req.body.code && req.body.email) {
-        console.log(req.body.code);
+        // console.log(req.body.code);
         const currentTime = Date.now();
         try {
             const user = await User.findOne({email: req.body.email})
